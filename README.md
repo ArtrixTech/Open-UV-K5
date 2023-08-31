@@ -1,6 +1,7 @@
 # A Better Firmware for Quansheng UV-K5/K6
 
 Based on the work from https://github.com/DualTachyon/uv-k5-firmware
+
 @DualTachyon 's work focuses on re-impl the whole original FW but OpenUVK5 focuses on how to bring more functionalities and better user experience to the Quansheng UV-K5/K6.
 
 Use it at your own risk!
