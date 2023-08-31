@@ -43,6 +43,7 @@ extern const uint8_t BITMAP_RX[16];
 
 extern const uint8_t BITMAP_M[8];
 extern const uint8_t BITMAP_F[8];
+extern const uint8_t BITMAP_MV[12];
 
 extern const uint8_t BITMAP_ReverseMode[8];
 

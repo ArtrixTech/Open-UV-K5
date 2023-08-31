@@ -24,7 +24,7 @@
 #include "ui/helper.h"
 #include "ui/inputbox.h"
 #include "ui/ui.h"
-
+#include "helper/battery.h"
 void UI_DisplayFM(void)
 {
 	uint8_t i;
@@ -33,9 +33,9 @@ void UI_DisplayFM(void)
 	memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
 
 	memset(String, 0, sizeof(String));
-	strcpy(String, "FM");
+	strcpy(String, "FM-RADIO");
 
-	UI_PrintString(String, 0, 127, 0, 12, true);
+	UI_PrintString(String, 8, 127, 0, 8, false);
 	memset(String, 0, sizeof(String));
 
 	if (gAskToSave) {
@@ -47,26 +47,26 @@ void UI_DisplayFM(void)
 			if (!gEeprom.FM_IsMrMode) {
 				for (i = 0; i < 20; i++) {
 					if (gEeprom.FM_FrequencyPlaying == gFM_Channels[i]) {
-						sprintf(String, "VFO(CH%02d)", i + 1);
+						sprintf(String, "Freq(CH%02d)", i + 1);
 						break;
 					}
 				}
 				if (i == 20) {
-					strcpy(String, "VFO");
+					strcpy(String, "FREQ");
 				}
 			} else {
-				sprintf(String, "MR(CH%02d)", gEeprom.FM_SelectedChannel + 1);
+				sprintf(String, "CH%02d", gEeprom.FM_SelectedChannel + 1);
 			}
 		} else {
 			if (!gFM_AutoScan) {
-				strcpy(String, "M-SCAN");
+				strcpy(String, "MANUAL-SCAN");
 			} else {
-				sprintf(String, "A-SCAN(%d)", gFM_ChannelPosition + 1);
+				sprintf(String, "AUTO-SCAN(%d)", gFM_ChannelPosition + 1);
 			}
 		}
 	}
 
-	UI_PrintString(String, 0, 127, 2, 10, true);
+	UI_PrintString(String, 8, 127, 2, 8, false);
 	memset(String, 0, sizeof(String));
 
 	if (gAskToSave || (gEeprom.FM_IsMrMode && gInputBoxIndex)) {
@@ -74,9 +74,9 @@ void UI_DisplayFM(void)
 	} else if (!gAskToDelete) {
 		if (gInputBoxIndex == 0) {
 			NUMBER_ToDigits(gEeprom.FM_FrequencyPlaying * 10000, String);
-			UI_DisplayFrequency(String, 23, 4, false, true);
+			UI_DisplayFrequency(String, 8, 4, true, true);
 		} else {
-			UI_DisplayFrequency(gInputBox, 23, 4, true, false);
+			UI_DisplayFrequency(gInputBox, 8, 4, true, false);
 		}
 		ST7565_BlitFullScreen();
 		return;
@@ -84,7 +84,7 @@ void UI_DisplayFM(void)
 		sprintf(String, "CH-%02d", gEeprom.FM_SelectedChannel + 1);
 	}
 
-	UI_PrintString(String, 0, 127, 4, 10, true);
+	UI_PrintString(String, 8, 127, 4, 10, false);
 	ST7565_BlitFullScreen();
 }
 
