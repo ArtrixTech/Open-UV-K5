@@ -1,11 +1,13 @@
-# Open reimplementation of the Quan Sheng UV K5 v2.1.27 firmware
+# A Better Firmware for Quansheng UV-K5/K6
 
-This currently works for me, but use at your own risk.
+Based on the work from https://github.com/DualTachyon/uv-k5-firmware
+@DualTachyon 's work focuses on re-impl the whole original FW but OpenUVK5 focuses on how to bring more functionalities and better user experience to the Quansheng UV-K5/K6.
 
+Use it at your own risk!
 
 # Building
-
-To build the firmware, you need to fetch the submodules and then run make:
+Should be built under unix-like systems yet. 
+Don't forget to install gcc-arm-none-eabi first.
 ```
 git submodule update --init --recursive --depth=1
 make
