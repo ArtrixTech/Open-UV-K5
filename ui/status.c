@@ -80,13 +80,13 @@ void UI_DisplayStatus(void) {
 
     // Display of battery voltage
     char VoltageString[8];
-    uint16_t VoltageOffset = 76;
+    uint16_t VoltageOffset = 94;
     memset(VoltageString, 0, sizeof(VoltageString));
-    NUMBER_ToDigits(gBatteryVoltageAverage*10, VoltageString);
-    for (uint8_t i = 0; i < 4; i++) {
-        memcpy(gStatusLine + (i * 7) + VoltageOffset, gFontSmallDigits[(uint8_t)VoltageString[i + 4]], 7);
-    }
-    memcpy(gStatusLine + VoltageOffset + 4 * 7 + 2, BITMAP_MV, sizeof(BITMAP_MV)); // mV Bitmap
+    NUMBER_ToDigits((uint8_t)(gBatteryVoltageAverage * 0.1), VoltageString);
+    memcpy(gStatusLine + VoltageOffset, gFontSmallDigits[(uint8_t)VoltageString[6]], 7);
+    memcpy(gStatusLine + VoltageOffset + 7, gFontSmallDigits[12], 7);
+    memcpy(gStatusLine + VoltageOffset + 7 + 3, gFontSmallDigits[(uint8_t)VoltageString[7]], 7);
+    memcpy(gStatusLine + VoltageOffset + 2 * 7 + 3, gFontSmallLettersUpper[21], 7); // V Letter
 
     ST7565_BlitStatusLine();
 }
