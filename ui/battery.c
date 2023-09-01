@@ -47,7 +47,7 @@ void UI_DisplayBattery(uint8_t Level)
 			pBitmap = BITMAP_BatteryLevel5;
 			break;
 		}
-		ST7565_DrawLine(110, 0, 18, pBitmap, bClearMode);
+		ST7565_DrawLine(122, 0, 6, pBitmap, bClearMode);
 	}
 }
 
