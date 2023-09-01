@@ -187,19 +187,18 @@ void UI_DisplayMain(void)
 			}
 		}
 		if (g371) {
-			uint8_t Width = 10;
+			uint8_t Width = 8;
 
 			memset(String, 0, sizeof(String));
 			switch (g371) {
 			case 1:
-				strcpy(String, "BUSY");
-				Width = 15;
+				strcpy(String, "CHAN-BUSY");
 				break;
 			case 2:
-				strcpy(String, "BAT LOW");
+				strcpy(String, "BAT-LOW");
 				break;
 			case 3:
-				strcpy(String, "DISABLE");
+				strcpy(String, "TX-FORBID");
 				break;
 			case 4:
 				strcpy(String, "TIMEOUT");
@@ -208,7 +207,7 @@ void UI_DisplayMain(void)
 				strcpy(String, "ALARM");
 				break;
 			case 6:
-				sprintf(String, "VOL HIGH");
+				sprintf(String, "VOL-HIGH");
 				Width = 8;
 				break;
 			}
