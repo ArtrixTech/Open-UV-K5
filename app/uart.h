@@ -14,20 +14,13 @@
  *     limitations under the License.
  */
 
-#ifndef DTMF_H
-#define DTMF_H
+#ifndef APP_UART_H
+#define APP_UART_H
 
 #include <stdbool.h>
-#include <stdint.h>
 
-extern char gDTMF_String[15];
-
-bool DTMF_ValidateCodes(char *pCode, uint8_t Size);
-bool DTMF_GetContact(uint8_t Index, char *pContact);
-bool DTMF_FindContact(const char *pContact, char *pResult);
-char DTMF_GetCharacter(uint8_t Code);
-bool DTMF_CompareMessage(const char *pDTMF, const char *pTemplate, uint8_t Size, bool bFlag);
-bool DTMF_IsGroupCall(const char *pDTMF, uint32_t Size);
+bool UART_IsCommandAvailable(void);
+void UART_HandleCommand(void);
 
 #endif
 

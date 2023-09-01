@@ -19,6 +19,7 @@
 #include "ARMCM0.h"
 
 #include "app/app.h"
+#include "app/dtmf.h"
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/portcon.h"
@@ -36,7 +37,6 @@
 #include "driver/system.h"
 #include "driver/systick.h"
 #include "driver/uart.h"
-#include "dtmf.h"
 #include "external/printf/printf.h"
 #include "functions.h"
 #include "helper/battery.h"
@@ -112,9 +112,9 @@ void Main(void)
 
 		BootMode = BOOT_GetMode();
 		if (gEeprom.POWER_ON_PASSWORD < 1000000) {
-			g_2000036E = 1;
+			bIsInLockScreen = true;
 			UI_DisplayLock();
-			g_2000036E = 0;
+			bIsInLockScreen = false;
 		}
 
 		BOOT_ProcessMode(BootMode);

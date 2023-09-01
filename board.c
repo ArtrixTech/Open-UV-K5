@@ -16,6 +16,7 @@
  */
 
 #include <string.h>
+#include "app/dtmf.h"
 #include "app/fm.h"
 #include "board.h"
 #include "bsp/dp32g030/gpio.h"
@@ -31,7 +32,6 @@
 #include "driver/gpio.h"
 #include "driver/system.h"
 #include "driver/st7565.h"
-#include "dtmf.h"
 #include "frequencies.h"
 #include "helper/battery.h"
 #include "misc.h"
@@ -755,12 +755,12 @@ void BOARD_EEPROM_Init(void)
 
 	for (i = 0; i < 4; i++) {
 		if (gCustomPasswordKey[i] != 0xFFFFFFFFU) {
-			bIsCheckExistingPassword = true;
+			bHasCustomAesKey = true;
 			return;
 		}
 	}
 
-	bIsCheckExistingPassword = false;
+	bHasCustomAesKey = false;
 }
 
 void BOARD_EEPROM_LoadMoreSettings(void)

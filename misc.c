@@ -31,7 +31,7 @@ uint8_t gSetting_F_LOCK;
 
 uint32_t gCustomPasswordKey[4];
 
-bool bIsCheckExistingPassword;
+bool bHasCustomAesKey;
 
 uint8_t gEEPROM_1EC0_0[8];
 uint8_t gEEPROM_1EC0_1[8];
@@ -50,13 +50,11 @@ volatile uint16_t gBatterySaveCountdown;
 volatile uint16_t g_2000033A;
 volatile uint16_t gTxTimerCountdown = 1000;
 volatile uint16_t g_20000342;
-volatile uint16_t gFmPlayCountdown = 1;
-volatile uint16_t g_20000356;
-uint16_t g_20000362;
-uint8_t g_2000036B;
+volatile uint16_t gNOAA_Countdown;
+bool gEnableSpeaker;
 uint8_t gKeyLockCountdown;
 uint8_t gRTTECountdown;
-uint8_t g_2000036E;
+bool bIsInLockScreen;
 uint8_t gUpdateStatus;
 uint8_t g_20000370;
 uint8_t g_20000371[2];
@@ -71,7 +69,6 @@ volatile uint8_t g_20000381;
 uint8_t g_20000382;
 uint8_t g_20000383;
 uint16_t g_2000038E;
-volatile int8_t gFM_Step;
 uint8_t g_20000393;
 bool g_20000394;
 uint8_t g_20000395;
@@ -79,7 +76,7 @@ uint8_t gKeypadLocked;
 uint8_t g_20000395;
 uint8_t g_20000396;
 uint8_t g_20000398;
-uint8_t g_2000039A;
+uint8_t gVfoConfigureMode;
 uint8_t g_2000039B;
 bool gRequestSaveVFO;
 uint8_t gRequestSaveChannel;
@@ -94,7 +91,7 @@ bool gFlagSaveVfo;
 bool gFlagSaveSettings;
 uint8_t gFlagSaveChannel;
 bool gFlagSaveFM;
-uint8_t g_200003AA;
+uint8_t gDTMF_RequestPending;
 bool g_CDCSS_Lost;
 uint8_t gCDCSSCodeType;
 bool g_CTCSS_Lost;
@@ -105,16 +102,11 @@ uint8_t gFlashLightState;
 uint8_t g_200003B4;
 uint16_t g_200003B6;
 uint16_t g_200003B8;
-uint8_t g_200003BA;
-uint8_t g_200003BB;
 uint8_t g_200003BC;
 uint8_t g_200003BD;
 uint8_t g_200003BE;
 uint8_t g_200003C0;
-bool gDTMF_DecodeRing;
 uint8_t g_200003C3;
-uint8_t gDTMF_DecodeRingCountdown;
-uint8_t gDTMFChosenContact;
 uint16_t g_200003E2;
 volatile uint16_t gFlashLightBlinkCounter;
 uint8_t g_200003FD;
@@ -133,15 +125,12 @@ uint8_t g_20000427;
 bool gKeyBeingHeld;
 bool gPttIsPressed;
 uint8_t gPttDebounceCounter;
-uint8_t gDTMF_WriteIndex;
 uint8_t g_20000438;
 bool g_20000439;
 uint8_t gMenuListCount;
 uint8_t g_20000442;
 uint8_t g_20000458;
 uint8_t gBackupCROSS_BAND_RX_TX;
-uint8_t g_CxCSS_Type;
-uint8_t g_CxCSS_Index;
 uint8_t g_2000045C;
 uint8_t g_2000045D;
 uint8_t g_2000045F;
@@ -150,22 +139,11 @@ uint8_t g_20000464;
 uint8_t gAircopySendCountdown;
 uint8_t gFSKWriteIndex;
 uint8_t g_20000474;
-char g_20000D1C[15];
-char gDTMF_Received[16];
-bool gIsDtmfContactValid;
-char gDTMF_ID[4];
-char gDTMF_Contact0[4];
-char gDTMF_Contact1[4];
-uint8_t g_CalloutAndDTMF_State;
 
-bool gFM_AutoScan;
 bool gIsNoaaMode;
 volatile bool gNextTimeslice;
 uint8_t gNoaaChannel;
 bool gUpdateDisplay;
-uint8_t gFmRadioCountdown;
-uint8_t gFM_ChannelPosition;
-uint8_t gDTMF_AUTO_RESET_TIME;
 bool gF_LOCK;
 uint8_t gScanChannel;
 uint32_t gScanFrequency;
@@ -181,19 +159,18 @@ volatile bool gNextTimeslice40ms;
 volatile bool gSchedulePowerSave;
 volatile bool gBatterySaveCountdownExpired;
 volatile bool gSystickFlag7;
-volatile bool gSystickFlag8;
+volatile bool gScheduleNOAA;
 volatile bool gSystickFlag9;
 volatile bool gSystickFlag10;
 volatile bool gScheduleFM;
 
 volatile uint16_t ScanPauseDelayIn10msec;
 
-// Doubts about whether this should be signed or not.
-int16_t gFM_FrequencyDeviation;
-
 uint16_t gCurrentRSSI;
 
 volatile int8_t gStepDirection;
+
+bool gIsLocked;
 
 // --------
 

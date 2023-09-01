@@ -23,6 +23,9 @@
 #include "ui/inputbox.h"
 #include "ui/ui.h"
 
+DCS_CodeType_t gCS_ScannedType;
+uint8_t gCS_ScannedIndex;
+
 void SCANNER_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 	if (!bKeyHeld && bKeyPressed) {
@@ -60,7 +63,7 @@ void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 			gEeprom.CROSS_BAND_RX_TX = gBackupCROSS_BAND_RX_TX;
 			gUpdateStatus = true;
 			gFlagStopScan = true;
-			g_2000039A = 2;
+			gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
 			g_2000039B = 1;
 			gAnotherVoiceID = VOICE_ID_CANCEL;
 			break;
@@ -164,18 +167,18 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 		if (g_20000458 == 0) {
 			RADIO_InitInfo(gTxInfo, gTxInfo->CHANNEL_SAVE, FREQUENCY_GetBand(gScanFrequency), gScanFrequency);
 			if (g_2000045C == 1) {
-				gTxInfo->ConfigRX.CodeType = g_CxCSS_Type;
-				gTxInfo->ConfigRX.Code = g_CxCSS_Index;
+				gTxInfo->ConfigRX.CodeType = gCS_ScannedType;
+				gTxInfo->ConfigRX.Code = gCS_ScannedIndex;
 			}
 			gTxInfo->ConfigTX = gTxInfo->ConfigRX;
 			gTxInfo->STEP_SETTING = gStepSetting;
 		} else {
 			RADIO_ConfigureChannel(0, 2);
 			RADIO_ConfigureChannel(1, 2);
-			gTxInfo->ConfigRX.CodeType = g_CxCSS_Type;
-			gTxInfo->ConfigRX.Code = g_CxCSS_Index;
-			gTxInfo->ConfigTX.CodeType = g_CxCSS_Type;
-			gTxInfo->ConfigTX.Code = g_CxCSS_Index;
+			gTxInfo->ConfigRX.CodeType = gCS_ScannedType;
+			gTxInfo->ConfigRX.Code = gCS_ScannedIndex;
+			gTxInfo->ConfigTX.CodeType = gCS_ScannedType;
+			gTxInfo->ConfigTX.Code = gCS_ScannedIndex;
 		}
 
 		if (IS_MR_CHANNEL(gTxInfo->CHANNEL_SAVE)) {

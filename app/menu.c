@@ -15,6 +15,7 @@
  */
 
 #include <string.h>
+#include "app/dtmf.h"
 #include "app/menu.h"
 #include "audio.h"
 #include "board.h"
@@ -206,7 +207,7 @@ void MENU_AcceptSetting(void)
 	case MENU_SQL:
 		gEeprom.SQUELCH_LEVEL = gSubMenuSelection;
 		gRequestSaveSettings = true;
-		g_2000039A = 1;
+		gVfoConfigureMode = VFO_CONFIGURE_1;
 		return;
 
 	case MENU_STEP:
@@ -369,14 +370,14 @@ void MENU_AcceptSetting(void)
 	case MENU_S_ADD1:
 		gTxInfo->SCANLIST1_PARTICIPATION = gSubMenuSelection;
 		SETTINGS_UpdateChannel(gTxInfo->CHANNEL_SAVE, gTxInfo, true);
-		g_2000039A = 1;
+		gVfoConfigureMode = VFO_CONFIGURE_1;
 		g_2000039B = 1;
 		return;
 
 	case MENU_S_ADD2:
 		gTxInfo->SCANLIST2_PARTICIPATION = gSubMenuSelection;
 		SETTINGS_UpdateChannel(gTxInfo->CHANNEL_SAVE, gTxInfo, true);
-		g_2000039A = 1;
+		gVfoConfigureMode = VFO_CONFIGURE_1;
 		g_2000039B = 1;
 		return;
 
@@ -437,9 +438,9 @@ void MENU_AcceptSetting(void)
 		gDTMFChosenContact = gSubMenuSelection - 1;
 		if (gIsDtmfContactValid) {
 			GUI_SelectNextDisplay(DISPLAY_MAIN);
-			g_200003BA = 1;
-			g_200003BB = 3;
-			memcpy(g_20000D1C, gDTMF_ID, 4);
+			gDTMF_InputMode = true;
+			gDTMF_InputIndex = 3;
+			memcpy(gDTMF_InputBox, gDTMF_ID, 4);
 			gRequestDisplayScreen = DISPLAY_INVALID;
 		}
 		return;
@@ -465,7 +466,7 @@ void MENU_AcceptSetting(void)
 
 	case MENU_DEL_CH:
 		SETTINGS_UpdateChannel(gSubMenuSelection, NULL, false);
-		g_2000039A = 2;
+		gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
 		g_2000039B = 1;
 		return;
 
@@ -492,7 +493,7 @@ void MENU_AcceptSetting(void)
 	case MENU_350EN:
 		gSetting_350EN = gSubMenuSelection;
 		gRequestSaveSettings = true;
-		g_2000039A = 2;
+		gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
 		g_2000039B = 1;
 		return;
 

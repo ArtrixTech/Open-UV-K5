@@ -41,6 +41,12 @@ enum {
 	FLASHLIGHT_BLINK = 2U,
 };
 
+enum {
+	VFO_CONFIGURE_0 = 0U,
+	VFO_CONFIGURE_1 = 1U,
+	VFO_CONFIGURE_RELOAD = 2U,
+};
+
 extern const uint32_t *gUpperLimitFrequencyBandTable;
 extern const uint32_t *gLowerLimitFrequencyBandTable;
 
@@ -55,7 +61,7 @@ extern uint8_t gSetting_F_LOCK;
 
 extern uint32_t gCustomPasswordKey[4];
 
-extern bool bIsCheckExistingPassword;
+extern bool bHasCustomAesKey;
 
 extern uint8_t gEEPROM_1EC0_0[8];
 extern uint8_t gEEPROM_1EC0_1[8];
@@ -75,12 +81,11 @@ extern volatile uint16_t g_2000033A;
 extern volatile uint16_t gTxTimerCountdown;
 extern volatile uint16_t g_20000342;
 extern volatile uint16_t gFmPlayCountdown;
-extern volatile uint16_t g_20000356;
-extern uint16_t g_20000362;
-extern uint8_t g_2000036B;
+extern volatile uint16_t gNOAA_Countdown;
+extern bool gEnableSpeaker;
 extern uint8_t gKeyLockCountdown;
 extern uint8_t gRTTECountdown;
-extern uint8_t g_2000036E;
+extern bool bIsInLockScreen;
 extern uint8_t gUpdateStatus;
 extern uint8_t g_20000370;
 extern uint8_t g_20000371[2];
@@ -99,10 +104,9 @@ extern volatile int8_t gFM_Step;
 extern uint8_t g_20000393;
 extern bool g_20000394;
 extern uint8_t g_20000395;
-extern uint8_t g_20000395;
 extern uint8_t g_20000396;
 extern uint8_t g_20000398;
-extern uint8_t g_2000039A;
+extern uint8_t gVfoConfigureMode;
 extern uint8_t g_2000039B;
 extern bool gRequestSaveVFO;
 extern uint8_t gRequestSaveChannel;
@@ -118,7 +122,7 @@ extern bool gFlagSaveVfo;
 extern bool gFlagSaveSettings;
 extern uint8_t gFlagSaveChannel;
 extern bool gFlagSaveFM;
-extern uint8_t g_200003AA;
+extern uint8_t gDTMF_RequestPending;
 extern bool g_CDCSS_Lost;
 extern uint8_t gCDCSSCodeType;
 extern bool g_CTCSS_Lost;
@@ -129,16 +133,11 @@ extern uint8_t gFlashLightState;
 extern uint8_t g_200003B4;
 extern uint16_t g_200003B6;
 extern uint16_t g_200003B8;
-extern uint8_t g_200003BA;
-extern uint8_t g_200003BB;
 extern uint8_t g_200003BC;
 extern uint8_t g_200003BD;
 extern uint8_t g_200003BE;
 extern uint8_t g_200003C0;
-extern bool gDTMF_DecodeRing;
 extern uint8_t g_200003C3;
-extern uint8_t gDTMF_DecodeRingCountdown;
-extern uint8_t gDTMFChosenContact;
 extern uint16_t g_200003E2;
 extern volatile uint16_t gFlashLightBlinkCounter;
 extern uint8_t g_200003FD;
@@ -157,15 +156,12 @@ extern uint8_t g_20000427;
 extern bool gKeyBeingHeld;
 extern bool gPttIsPressed;
 extern uint8_t gPttDebounceCounter;
-extern uint8_t gDTMF_WriteIndex;
 extern uint8_t g_20000438;
 extern bool g_20000439;
 extern uint8_t gMenuListCount;
 extern uint8_t g_20000442;
 extern uint8_t g_20000458;
 extern uint8_t gBackupCROSS_BAND_RX_TX;
-extern uint8_t g_CxCSS_Type;
-extern uint8_t g_CxCSS_Index;
 extern uint8_t g_2000045C;
 extern uint8_t g_2000045D;
 extern uint8_t g_2000045F;
@@ -174,22 +170,13 @@ extern uint8_t g_20000464;
 extern uint8_t gAircopySendCountdown;
 extern uint8_t gFSKWriteIndex;
 extern uint8_t g_20000474;
-extern char g_20000D1C[15];
-extern char gDTMF_Received[16];
-extern bool gIsDtmfContactValid;
-extern char gDTMF_ID[4];
-extern char gDTMF_Contact0[4];
-extern char gDTMF_Contact1[4];
-extern uint8_t g_CalloutAndDTMF_State;
 
 extern bool gFM_AutoScan;
 extern bool gIsNoaaMode;
 extern volatile bool gNextTimeslice;
 extern uint8_t gNoaaChannel;
 extern bool gUpdateDisplay;
-extern uint8_t gFmRadioCountdown;
 extern uint8_t gFM_ChannelPosition;
-extern uint8_t gDTMF_AUTO_RESET_TIME;
 extern bool gF_LOCK;
 extern uint8_t gScanChannel;
 extern uint32_t gScanFrequency;
@@ -205,18 +192,18 @@ extern volatile bool gNextTimeslice40ms;
 extern volatile bool gSchedulePowerSave;
 extern volatile bool gBatterySaveCountdownExpired;
 extern volatile bool gSystickFlag7;
-extern volatile bool gSystickFlag8;
+extern volatile bool gScheduleNOAA;
 extern volatile bool gSystickFlag9;
 extern volatile bool gSystickFlag10;
 extern volatile bool gScheduleFM;
 
 extern volatile uint16_t ScanPauseDelayIn10msec;
 
-extern int16_t gFM_FrequencyDeviation;
-
 extern uint16_t gCurrentRSSI;
 
 extern volatile int8_t gStepDirection;
+
+extern bool gIsLocked;
 
 // --------
 
