@@ -35,17 +35,17 @@ void UI_DisplayStatus(void) {
     }
     if (gBatteryDisplayLevel < 2) {
         if (gLowBatteryBlink == 1) {
-            memcpy(gStatusLine + 122, BITMAP_BatteryLevel1, sizeof(BITMAP_BatteryLevel1));
+            memcpy(gStatusLine + 120, BITMAP_BatteryLevel1, sizeof(BITMAP_BatteryLevel1));
         }
     } else {
         if (gBatteryDisplayLevel == 2) {
-            memcpy(gStatusLine + 122, BITMAP_BatteryLevel2, sizeof(BITMAP_BatteryLevel2));
+            memcpy(gStatusLine + 120, BITMAP_BatteryLevel2, sizeof(BITMAP_BatteryLevel2));
         } else if (gBatteryDisplayLevel == 3) {
-            memcpy(gStatusLine + 122, BITMAP_BatteryLevel3, sizeof(BITMAP_BatteryLevel3));
+            memcpy(gStatusLine + 120, BITMAP_BatteryLevel3, sizeof(BITMAP_BatteryLevel3));
         } else if (gBatteryDisplayLevel == 4) {
-            memcpy(gStatusLine + 122, BITMAP_BatteryLevel4, sizeof(BITMAP_BatteryLevel4));
+            memcpy(gStatusLine + 120, BITMAP_BatteryLevel4, sizeof(BITMAP_BatteryLevel4));
         } else {
-            memcpy(gStatusLine + 122, BITMAP_BatteryLevel5, sizeof(BITMAP_BatteryLevel5));
+            memcpy(gStatusLine + 120, BITMAP_BatteryLevel5, sizeof(BITMAP_BatteryLevel5));
         }
     }
     if (gChargingWithTypeC) {
@@ -80,7 +80,7 @@ void UI_DisplayStatus(void) {
 
     // Display of battery voltage
     char VoltageString[8];
-    uint16_t VoltageOffset = 78;
+    uint16_t VoltageOffset = 76;
     memset(VoltageString, 0, sizeof(VoltageString));
     NUMBER_ToDigits(gBatteryVoltageAverage*10, VoltageString);
     for (uint8_t i = 0; i < 4; i++) {
