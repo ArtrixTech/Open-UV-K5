@@ -6,6 +6,12 @@ Based on the work from https://github.com/DualTachyon/uv-k5-firmware
 
 Use it at your own risk!
 
+# Compiler
+
+arm-none-eabi GCC version 10.3.1 is recommended, which is the current version on Ubuntu 22.04.03 LTS.
+Other versions may generate a flash file that is too big.
+You can get a correct version from: https://developer.arm.com/downloads/-/gnu-rm
+
 # Building
 Should be built under unix-like systems yet. 
 Don't forget to install gcc-arm-none-eabi first.

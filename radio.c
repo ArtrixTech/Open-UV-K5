@@ -15,6 +15,7 @@
  */
 
 #include <string.h>
+#include "app/dtmf.h"
 #include "app/fm.h"
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
@@ -725,12 +726,10 @@ void RADIO_SomethingWithTransmit(void)
 				Value = 1;
 			} else if (gBatteryDisplayLevel == 0) {
 				Value = 2;
-			} else {
-				// TODO: Fix this goto, a bit painful to disentangle
-				if (gBatteryDisplayLevel != 6) {
-					goto LAB_00007c20;
-				}
+			} else if (gBatteryDisplayLevel == 6) {
 				Value = 6;
+			} else {
+				goto Skip;
 			}
 		} else {
 			Value = 3;
@@ -738,29 +737,31 @@ void RADIO_SomethingWithTransmit(void)
 		RADIO_SomethingElse(Value);
 		g_20000383 = 0;
 		AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
-	} else {
-LAB_00007c20:
-		if (g_200003BE == 1) {
-			if (g_20000438 == 2) {
-				g_200003BD = 1;
-				g_200003BC = 0;
-				g_200003C3 = 6;
-			} else {
-				g_200003BC = 1;
-				g_200003BD = 0;
-			}
-		}
-		FUNCTION_Select(FUNCTION_TRANSMIT);
-		if (g_20000383 == 0) {
-			gTxTimerCountdown = gEeprom.TX_TIMEOUT_TIMER * 120;
-		} else {
-			gTxTimerCountdown = 0;
-		}
-		gTxTimeoutReached = false;
-		g_200003FD = 0;
-		gRTTECountdown = 0;
+		gDTMF_ReplyState = DTMF_REPLY_UP_CODE;
+		return;
 	}
-	g_200003BE = 0;
+
+Skip:
+	if (gDTMF_ReplyState == DTMF_REPLY_ANI) {
+		if (gDTMF_CallMode == DTMF_CALL_MODE_2) {
+			g_200003BD = 1;
+			gDTMF_CallState = DTMF_CALL_STATE_NONE;
+			g_200003C3 = 6;
+		} else {
+			gDTMF_CallState = DTMF_CALL_STATE_CALL_OUT;
+			g_200003BD = 0;
+		}
+	}
+	FUNCTION_Select(FUNCTION_TRANSMIT);
+	if (g_20000383 == 0) {
+		gTxTimerCountdown = gEeprom.TX_TIMEOUT_TIMER * 120;
+	} else {
+		gTxTimerCountdown = 0;
+	}
+	gTxTimeoutReached = false;
+	g_200003FD = 0;
+	gRTTECountdown = 0;
+	gDTMF_ReplyState = DTMF_REPLY_UP_CODE;
 }
 
 void RADIO_EnableCxCSS(void)
@@ -799,7 +800,7 @@ void RADIO_SendEndOfTransmission(void)
 	} else if (gEeprom.ROGER == ROGER_MODE_MDC) {
 		BK4819_PlayRogerMDC();
 	}
-	if (g_200003BC == 0 && (gCrossTxRadioInfo->DTMF_PTT_ID_TX_MODE == PTT_ID_EOT || gCrossTxRadioInfo->DTMF_PTT_ID_TX_MODE == PTT_ID_BOTH)) {
+	if (gDTMF_CallState == DTMF_CALL_STATE_NONE && (gCrossTxRadioInfo->DTMF_PTT_ID_TX_MODE == PTT_ID_EOT || gCrossTxRadioInfo->DTMF_PTT_ID_TX_MODE == PTT_ID_BOTH)) {
 		if (gEeprom.DTMF_SIDE_TONE) {
 			GPIO_SetBit(&GPIOC->DATA, GPIOC_PIN_AUDIO_PATH);
 			gEnableSpeaker = true;

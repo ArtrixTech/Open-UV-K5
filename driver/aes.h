@@ -14,10 +14,12 @@
  *     limitations under the License.
  */
 
-#ifndef OVERLAY_H
-#define OVERLAY_H
+#ifndef DRIVER_AES_H
+#define DRIVER_AES_H
 
-void OVERLAY_Install(void);
+#include <stdint.h>
+
+void AES_Encrypt(const void *pKey, const void *pIv, const void *pIn, void *pOut, uint8_t NumBlocks);
 
 #endif
 

@@ -59,9 +59,11 @@ extern uint8_t gSetting_F_LOCK;
 extern bool gSetting_ScrambleEnable;
 extern uint8_t gSetting_F_LOCK;
 
-extern uint32_t gCustomPasswordKey[4];
-
+extern const uint32_t gDefaultAesKey[4];
+extern uint32_t gCustomAesKey[4];
 extern bool bHasCustomAesKey;
+extern uint32_t gChallenge[4];
+extern uint8_t gTryCount;
 
 extern uint8_t gEEPROM_1EC0_0[8];
 extern uint8_t gEEPROM_1EC0_1[8];
@@ -133,9 +135,7 @@ extern uint8_t gFlashLightState;
 extern uint8_t g_200003B4;
 extern uint16_t g_200003B6;
 extern uint16_t g_200003B8;
-extern uint8_t g_200003BC;
 extern uint8_t g_200003BD;
-extern uint8_t g_200003BE;
 extern uint8_t g_200003C0;
 extern uint8_t g_200003C3;
 extern uint16_t g_200003E2;
@@ -156,10 +156,8 @@ extern uint8_t g_20000427;
 extern bool gKeyBeingHeld;
 extern bool gPttIsPressed;
 extern uint8_t gPttDebounceCounter;
-extern uint8_t g_20000438;
 extern bool g_20000439;
 extern uint8_t gMenuListCount;
-extern uint8_t g_20000442;
 extern uint8_t g_20000458;
 extern uint8_t gBackupCROSS_BAND_RX_TX;
 extern uint8_t g_2000045C;

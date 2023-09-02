@@ -751,10 +751,10 @@ void BOARD_EEPROM_Init(void)
 	EEPROM_ReadBuffer(0x0D60, gMR_ChannelAttributes, 207);
 
 	// 0F30..0F3F
-	EEPROM_ReadBuffer(0x0F30, gCustomPasswordKey, 16);
+	EEPROM_ReadBuffer(0x0F30, gCustomAesKey, 16);
 
 	for (i = 0; i < 4; i++) {
-		if (gCustomPasswordKey[i] != 0xFFFFFFFFU) {
+		if (gCustomAesKey[i] != 0xFFFFFFFFU) {
 			bHasCustomAesKey = true;
 			return;
 		}
@@ -823,5 +823,30 @@ void BOARD_EEPROM_LoadMoreSettings(void)
 	}
 
 	BK4819_WriteRegister(BK4819_REG_3B, gEeprom.BK4819_XTAL_FREQ_LOW + 22656);
+}
+
+void BOARD_FactoryReset(bool bIsAll)
+{
+	uint8_t Template[8];
+	uint16_t i;
+
+	memset(Template, 0xFF, sizeof(Template));
+	for (i = 0x0C80; i < 0x1E00; i += 8) {
+		if (
+			!(i >= 0x0EE0 && i < 0x0F18) && // ANI ID + DTMF codes
+			!(i >= 0x0F30 && i < 0x0F50) && // AES KEY + F LOCK + Scramble Enable
+			!(i >= 0x1C00 && i < 0x1E00) && // DTMF contacts
+			!(i >= 0x0EB0 && i < 0x0ED0) && // Welcome strings
+			!(i >= 0x0EA0 && i < 0x0EA8) && // Voice Prompt
+			(bIsAll || (
+				!(i >= 0x0D60 && i < 0x0E28) && // MR Channel Attributes
+				!(i >= 0x0F18 && i < 0x0F30) && // Scan List
+				!(i >= 0x0F50 && i < 0x1C00) && // MR Channel NAmes
+				!(i >= 0x0E40 && i < 0x0E70) && // FM Channels
+				!(i >= 0x0E88 && i < 0x0E90))) // FM settings
+		   ) {
+			EEPROM_WriteBuffer(i, Template);
+		}
+	}
 }
 
