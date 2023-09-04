@@ -14,17 +14,20 @@
  *     limitations under the License.
  */
 
-#ifndef APP_MENU_H
-#define APP_MENU_H
+#ifndef APP_ACTION_H
+#define APP_ACTION_H
 
 #include "driver/keyboard.h"
 
-int MENU_GetLimits(uint8_t Cursor, uint8_t *pMin, uint8_t *pMax);
-void MENU_AcceptSetting(void);
-void MENU_SelectNextDCS(void);
-void MENU_ShowCurrentSetting(void);
+//static void ACTION_FlashLight(void)
+void ACTION_Power(void);
+//static void ACTION_Monitor(void)
+void ACTION_Scan(bool bFlag);
+void ACTION_Vox(void);
+//static void ACTION_AlarmOr1750(bool b1750)
+void ACTION_FM(void);
 
-void MENU_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
+void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
 
 #endif
 

@@ -47,6 +47,31 @@ enum {
 	VFO_CONFIGURE_RELOAD = 2U,
 };
 
+enum AlarmState_t {
+	ALARM_STATE_OFF     = 0U,
+	ALARM_STATE_TXALARM = 1U,
+	ALARM_STATE_ALARM   = 2U,
+	ALARM_STATE_TX1750  = 3U,
+};
+
+typedef enum AlarmState_t AlarmState_t;
+
+enum ReceptionMode_t {
+	RX_MODE_NONE      = 0U,
+	RX_MODE_DETECTED  = 1U,
+	RX_MODE_LISTENING = 2U,
+};
+
+typedef enum ReceptionMode_t ReceptionMode_t;
+
+enum CssScanMode_t {
+	CSS_SCAN_MODE_OFF      = 0U,
+	CSS_SCAN_MODE_SCANNING = 1U,
+	CSS_SCAN_MODE_FOUND    = 2U,
+};
+
+typedef enum CssScanMode_t CssScanMode_t;
+
 extern const uint32_t *gUpperLimitFrequencyBandTable;
 extern const uint32_t *gLowerLimitFrequencyBandTable;
 
@@ -79,7 +104,7 @@ extern uint8_t gMR_ChannelAttributes[207];
 
 extern volatile bool gNextTimeslice500ms;
 extern volatile uint16_t gBatterySaveCountdown;
-extern volatile uint16_t g_2000033A;
+extern volatile uint16_t gDualWatchCountdown;
 extern volatile uint16_t gTxTimerCountdown;
 extern volatile uint16_t g_20000342;
 extern volatile uint16_t gFmPlayCountdown;
@@ -89,35 +114,28 @@ extern uint8_t gKeyLockCountdown;
 extern uint8_t gRTTECountdown;
 extern bool bIsInLockScreen;
 extern uint8_t gUpdateStatus;
-extern uint8_t g_20000370;
-extern uint8_t g_20000371[2];
-extern uint8_t g_20000373;
 extern uint8_t gFoundCTCSS;
 extern uint8_t gFoundCDCSS;
-extern uint8_t g_20000377;
+extern bool gEndOfRxDetectedMaybe;
 extern uint8_t gVFO_RSSI_Level[2];
 extern uint8_t gReducedService;
 extern uint8_t gBatteryVoltageIndex;
-extern volatile uint8_t g_20000381;
-extern uint8_t g_20000382;
-extern uint8_t g_20000383;
+extern CssScanMode_t gCssScanMode;
+extern bool g_20000382;
+extern AlarmState_t gAlarmState;
 extern uint16_t g_2000038E;
-extern volatile int8_t gFM_Step;
 extern uint8_t g_20000393;
-extern bool g_20000394;
-extern uint8_t g_20000395;
-extern uint8_t g_20000396;
-extern uint8_t g_20000398;
+extern bool gPttWasReleased;
+extern bool gPttWasPressed;
+extern bool gFlagReconfigureVfos;
 extern uint8_t gVfoConfigureMode;
-extern uint8_t g_2000039B;
+extern bool gFlagResetVfos;
 extern bool gRequestSaveVFO;
 extern uint8_t gRequestSaveChannel;
 extern bool gRequestSaveSettings;
 extern bool gRequestSaveFM;
 extern uint8_t gKeypadLocked;
 extern uint8_t g_200003A0;
-extern bool gFlagStartScan;
-extern bool gFlagStopScan;
 extern bool gFlagAcceptSetting;
 extern bool gFlagRefreshSetting;
 extern bool gFlagSaveVfo;
@@ -132,76 +150,56 @@ extern bool g_CxCSS_TAIL_Found;
 extern bool g_VOX_Lost;
 extern bool g_SquelchLost;
 extern uint8_t gFlashLightState;
-extern uint8_t g_200003B4;
+extern bool gVOX_NoiseDetected;
 extern uint16_t g_200003B6;
-extern uint16_t g_200003B8;
-extern uint8_t g_200003BD;
-extern uint8_t g_200003C0;
-extern uint8_t g_200003C3;
-extern uint16_t g_200003E2;
+extern uint16_t gVoxPauseCountdown;
 extern volatile uint16_t gFlashLightBlinkCounter;
-extern uint8_t g_200003FD;
-extern uint8_t gLowBatteryCountdown;
-extern uint8_t g_20000410;
-extern uint8_t g_20000411;
-extern uint8_t g_20000413;
-extern uint8_t g_20000414;
-extern uint8_t g_20000415;
-extern uint8_t g_20000416;
-extern uint32_t g_20000418;
+extern bool gFlagEndTransmission;
+extern uint16_t gLowBatteryCountdown;
+extern uint8_t gNextMrChannel;
+extern ReceptionMode_t gRxReceptionMode;
+extern bool g_20000413;
+extern uint8_t gRestoreMrChannel;
+extern uint8_t gCurrentScanList;
+extern uint8_t gPreviousMrChannel;
+extern uint32_t gRestoreFrequency;
 extern uint8_t g_2000041F;
-extern uint8_t g_20000420;
-extern uint16_t g_20000422;
-extern uint8_t g_20000427;
+extern uint8_t gAlarmToneCounter;
+extern uint16_t gAlarmRunningCounter;
 extern bool gKeyBeingHeld;
 extern bool gPttIsPressed;
 extern uint8_t gPttDebounceCounter;
 extern bool g_20000439;
 extern uint8_t gMenuListCount;
-extern uint8_t g_20000458;
 extern uint8_t gBackupCROSS_BAND_RX_TX;
-extern uint8_t g_2000045C;
 extern uint8_t g_2000045D;
-extern uint8_t g_2000045F;
-extern uint8_t gScannerEditState;
-extern uint8_t g_20000464;
 extern uint8_t gAircopySendCountdown;
 extern uint8_t gFSKWriteIndex;
 extern uint8_t g_20000474;
 
-extern bool gFM_AutoScan;
 extern bool gIsNoaaMode;
 extern volatile bool gNextTimeslice;
 extern uint8_t gNoaaChannel;
 extern bool gUpdateDisplay;
 extern uint8_t gFM_ChannelPosition;
 extern bool gF_LOCK;
-extern uint8_t gScanChannel;
-extern uint32_t gScanFrequency;
-extern uint8_t gScanPauseMode;
-extern uint8_t gScanState;
 extern uint8_t gShowChPrefix;
 extern volatile uint16_t gSystickCountdown2;
 extern volatile uint8_t gFoundCDCSSCountdown;
 extern volatile uint8_t gFoundCTCSSCountdown;
-extern volatile uint16_t gSystickCountdown11;
+extern volatile uint16_t gVoxStopCountdown;
 extern volatile bool gTxTimeoutReached;
 extern volatile bool gNextTimeslice40ms;
 extern volatile bool gSchedulePowerSave;
 extern volatile bool gBatterySaveCountdownExpired;
-extern volatile bool gSystickFlag7;
+extern volatile bool gScheduleDualWatch;
 extern volatile bool gScheduleNOAA;
-extern volatile bool gSystickFlag9;
 extern volatile bool gSystickFlag10;
 extern volatile bool gScheduleFM;
 
-extern volatile uint16_t ScanPauseDelayIn10msec;
-
 extern uint16_t gCurrentRSSI;
 
-extern volatile int8_t gStepDirection;
-
-extern bool gIsLocked;
+extern uint8_t gIsLocked;
 
 // --------
 

@@ -21,6 +21,7 @@
 #include "external/printf/printf.h"
 #include "functions.h"
 #include "misc.h"
+#include "radio.h"
 #include "settings.h"
 #include "ui/helper.h"
 #include "ui/inputbox.h"
@@ -64,7 +65,7 @@ void UI_DisplayMain(void)
 		}
 
 		if (Channel != i) {
-			if (gDTMF_CallState != DTMF_CALL_STATE_NONE || g_200003BD || gDTMF_InputMode) {
+			if (gDTMF_CallState != DTMF_CALL_STATE_NONE || gDTMF_IsTx || gDTMF_InputMode) {
 				char Contact[16];
 
 				if (!gDTMF_InputMode) {
@@ -80,7 +81,7 @@ void UI_DisplayMain(void)
 						} else {
 							sprintf(String, "CALL:%s", gDTMF_Caller);
 						}
-					} else if (g_200003BD == 1) {
+					} else if (gDTMF_IsTx) {
 						if (gDTMF_State == DTMF_STATE_TX_SUCC) {
 							strcpy(String, "DTMF TX(SUCC)");
 						} else {
@@ -108,7 +109,7 @@ void UI_DisplayMain(void)
 						} else {
 							sprintf(String, ">%s", gDTMF_Callee);
 						}
-					} else if (g_200003BD == 1) {
+					} else if (gDTMF_IsTx) {
 						sprintf(String, ">%s", gDTMF_String);
 					}
 				}
@@ -129,11 +130,12 @@ void UI_DisplayMain(void)
 		uint32_t SomeValue = 0;
 
 		if (gCurrentFunction == FUNCTION_TRANSMIT) {
-			if (g_20000383 == 2) {
+			if (gAlarmState == ALARM_STATE_ALARM) {
 				SomeValue = 2;
 			} else {
-				Channel = gEeprom.RX_CHANNEL;
-				if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) {
+				if (gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF) {
+					Channel = gEeprom.RX_CHANNEL;
+				} else {
 					Channel = gEeprom.TX_CHANNEL;
 				}
 				if (Channel == i) {
@@ -176,22 +178,22 @@ void UI_DisplayMain(void)
 
 		// 0x8FEC
 
-		uint8_t g371 = g_20000371[i];
-		if (gCurrentFunction == FUNCTION_TRANSMIT && g_20000383 == 2) {
+		uint8_t State = VfoState[i];
+		if (gCurrentFunction == FUNCTION_TRANSMIT && gAlarmState == ALARM_STATE_ALARM) {
 			if (gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF) {
 				Channel = gEeprom.RX_CHANNEL;
 			} else {
 				Channel = gEeprom.TX_CHANNEL;
 			}
 			if (Channel == i) {
-				g371 = 5;
+				State = VFO_STATE_ALARM;
 			}
 		}
-		if (g371) {
+		if (State) {
 			uint8_t Width = 8;
 
 			memset(String, 0, sizeof(String));
-			switch (g371) {
+			switch (State) {
 			case 1:
 				strcpy(String, "CHAN-BUSY");
 				break;
@@ -293,9 +295,9 @@ void UI_DisplayMain(void)
 		uint8_t Level = 0;
 
 		if (SomeValue == 1) {
-				if (gRxInfo->OUTPUT_POWER == OUTPUT_POWER_LOW) {
+				if (gRxVfo->OUTPUT_POWER == OUTPUT_POWER_LOW) {
 					Level = 2;
-				} else if (gRxInfo->OUTPUT_POWER == OUTPUT_POWER_MID) {
+				} else if (gRxVfo->OUTPUT_POWER == OUTPUT_POWER_MID) {
 					Level = 4;
 				} else {
 					Level = 6;

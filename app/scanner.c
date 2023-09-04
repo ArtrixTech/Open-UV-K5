@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/generic.h"
 #include "app/scanner.h"
 #include "audio.h"
 #include "frequencies.h"
@@ -23,10 +24,24 @@
 #include "ui/inputbox.h"
 #include "ui/ui.h"
 
-DCS_CodeType_t gCS_ScannedType;
-uint8_t gCS_ScannedIndex;
+DCS_CodeType_t gScanCssResultType;
+uint8_t gScanCssResultIndex;
+bool gFlagStartScan;
+bool gFlagStopScan;
+bool gScanSingleFrequency;
+uint8_t gScannerEditState;
+uint8_t gScanChannel;
+uint32_t gScanFrequency;
+bool gScanPauseMode;
+SCAN_CssState_t gScanCssState;
+volatile bool gScheduleScanListen = true;
+volatile uint16_t ScanPauseDelayIn10msec;
+uint8_t gScanProgressIndicator;
+uint8_t gScanHitCount;
+bool gScanUseCssResult;
+uint8_t gScanState;
 
-void SCANNER_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
+static void SCANNER_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 	if (!bKeyHeld && bKeyPressed) {
 		if (gScannerEditState == 1) {
@@ -52,7 +67,7 @@ void SCANNER_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	}
 }
 
-void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
+static void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 {
 	if (!bKeyHeld && bKeyPressed) {
 		gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
@@ -64,7 +79,7 @@ void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 			gUpdateStatus = true;
 			gFlagStopScan = true;
 			gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
-			g_2000039B = 1;
+			gFlagResetVfos = true;
 			gAnotherVoiceID = VOICE_ID_CANCEL;
 			break;
 
@@ -86,7 +101,7 @@ void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 	}
 }
 
-void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
+static void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 {
 	uint8_t Channel;
 
@@ -96,19 +111,19 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 	if (!bKeyPressed) {
 		return;
 	}
-	if (gScanState == 0 && g_20000458 == 0) {
+	if (gScanCssState == SCAN_CSS_STATE_OFF && !gScanSingleFrequency) {
 		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 		return;
 	}
 
-	if (gScanState == 1) {
-		if (g_20000458 == 1) {
+	if (gScanCssState == SCAN_CSS_STATE_SCANNING) {
+		if (gScanSingleFrequency) {
 			gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 			return;
 		}
 	}
 
-	if (gScanState == 3) {
+	if (gScanCssState == SCAN_CSS_STATE_FAILED) {
 		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 		return;
 	}
@@ -117,7 +132,7 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 
 	switch (gScannerEditState) {
 	case 0:
-		if (g_20000458 == 0) {
+		if (!gScanSingleFrequency) {
 			uint32_t Freq250;
 			uint32_t Freq625;
 			int16_t Delta250;
@@ -143,14 +158,14 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 				gScanFrequency = Freq250;
 			}
 		}
-		if (IS_MR_CHANNEL(gTxInfo->CHANNEL_SAVE)) {
+		if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
 			gScannerEditState = 1;
-			gScanChannel = gTxInfo->CHANNEL_SAVE;
-			gShowChPrefix = RADIO_CheckValidChannel(gTxInfo->CHANNEL_SAVE, false, 0);
+			gScanChannel = gTxVfo->CHANNEL_SAVE;
+			gShowChPrefix = RADIO_CheckValidChannel(gTxVfo->CHANNEL_SAVE, false, 0);
 		} else {
 			gScannerEditState = 2;
 		}
-		gScanState = 2;
+		gScanCssState = SCAN_CSS_STATE_FOUND;
 		gAnotherVoiceID = VOICE_ID_MEMORY_CHANNEL;
 		gRequestDisplayScreen = DISPLAY_SCANNER;
 		break;
@@ -164,31 +179,31 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 		break;
 
 	case 2:
-		if (g_20000458 == 0) {
-			RADIO_InitInfo(gTxInfo, gTxInfo->CHANNEL_SAVE, FREQUENCY_GetBand(gScanFrequency), gScanFrequency);
-			if (g_2000045C == 1) {
-				gTxInfo->ConfigRX.CodeType = gCS_ScannedType;
-				gTxInfo->ConfigRX.Code = gCS_ScannedIndex;
+		if (!gScanSingleFrequency) {
+			RADIO_InitInfo(gTxVfo, gTxVfo->CHANNEL_SAVE, FREQUENCY_GetBand(gScanFrequency), gScanFrequency);
+			if (gScanUseCssResult) {
+				gTxVfo->ConfigRX.CodeType = gScanCssResultType;
+				gTxVfo->ConfigRX.Code = gScanCssResultIndex;
 			}
-			gTxInfo->ConfigTX = gTxInfo->ConfigRX;
-			gTxInfo->STEP_SETTING = gStepSetting;
+			gTxVfo->ConfigTX = gTxVfo->ConfigRX;
+			gTxVfo->STEP_SETTING = gStepSetting;
 		} else {
 			RADIO_ConfigureChannel(0, 2);
 			RADIO_ConfigureChannel(1, 2);
-			gTxInfo->ConfigRX.CodeType = gCS_ScannedType;
-			gTxInfo->ConfigRX.Code = gCS_ScannedIndex;
-			gTxInfo->ConfigTX.CodeType = gCS_ScannedType;
-			gTxInfo->ConfigTX.Code = gCS_ScannedIndex;
+			gTxVfo->ConfigRX.CodeType = gScanCssResultType;
+			gTxVfo->ConfigRX.Code = gScanCssResultIndex;
+			gTxVfo->ConfigTX.CodeType = gScanCssResultType;
+			gTxVfo->ConfigTX.Code = gScanCssResultIndex;
 		}
 
-		if (IS_MR_CHANNEL(gTxInfo->CHANNEL_SAVE)) {
+		if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
 			Channel = gScanChannel;
 			gEeprom.MrChannel[gEeprom.TX_CHANNEL] = Channel;
 		} else {
-			Channel = gTxInfo->Band + FREQ_CHANNEL_FIRST;
+			Channel = gTxVfo->Band + FREQ_CHANNEL_FIRST;
 			gEeprom.FreqChannel[gEeprom.TX_CHANNEL] = Channel;
 		}
-		gTxInfo->CHANNEL_SAVE = Channel;
+		gTxVfo->CHANNEL_SAVE = Channel;
 		gEeprom.ScreenChannel[gEeprom.TX_CHANNEL] = Channel;
 		gAnotherVoiceID = VOICE_ID_CONFIRM;
 		gRequestDisplayScreen = DISPLAY_SCANNER;
@@ -202,7 +217,7 @@ void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 	}
 }
 
-void SCANNER_Key_STAR(bool bKeyPressed, bool bKeyHeld)
+static void SCANNER_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 {
 	if ((!bKeyHeld) && (bKeyPressed)) {
 		gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
@@ -211,7 +226,7 @@ void SCANNER_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 	return;
 }
 
-void SCANNER_Key_UP_DOWN(bool bKeyPressed, bool pKeyHeld, int8_t Direction)
+static void SCANNER_Key_UP_DOWN(bool bKeyPressed, bool pKeyHeld, int8_t Direction)
 {
 	if (pKeyHeld) {
 		if (!bKeyPressed) {
@@ -230,6 +245,40 @@ void SCANNER_Key_UP_DOWN(bool bKeyPressed, bool pKeyHeld, int8_t Direction)
 		gRequestDisplayScreen = DISPLAY_SCANNER;
 	} else {
 		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+	}
+}
+
+void SCANNER_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
+{
+	switch (Key) {
+	case KEY_0: case KEY_1: case KEY_2: case KEY_3:
+	case KEY_4: case KEY_5: case KEY_6: case KEY_7:
+	case KEY_8: case KEY_9:
+		SCANNER_Key_DIGITS(Key, bKeyPressed, bKeyHeld);
+		break;
+	case KEY_MENU:
+		SCANNER_Key_MENU(bKeyPressed, bKeyHeld);
+		break;
+	case KEY_UP:
+		SCANNER_Key_UP_DOWN(bKeyPressed, bKeyHeld, 1);
+		break;
+	case KEY_DOWN:
+		SCANNER_Key_UP_DOWN(bKeyPressed, bKeyHeld, -1);
+		break;
+	case KEY_EXIT:
+		SCANNER_Key_EXIT(bKeyPressed, bKeyHeld);
+		break;
+	case KEY_STAR:
+		SCANNER_Key_STAR(bKeyPressed, bKeyHeld);
+		break;
+	case KEY_PTT:
+		GENERIC_Key_PTT(bKeyPressed);
+		break;
+	default:
+		if (!bKeyHeld && bKeyPressed) {
+			gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+		}
+		break;
 	}
 }
 

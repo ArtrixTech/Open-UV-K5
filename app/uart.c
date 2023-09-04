@@ -30,6 +30,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "sram-overlay.h"
+#include "version.h"
 
 #define DMA_INDEX(x, y) (((x) + (y)) % sizeof(UART_DMA_Buffer))
 
@@ -140,7 +141,7 @@ static union {
 
 static uint32_t Timestamp;
 static uint16_t gUART_WriteIndex;
-static bool bIsEncrypted;
+static bool bIsEncrypted = true;
 
 static void SendReply(void *pReply, uint16_t Size)
 {
@@ -178,7 +179,7 @@ static void SendVersion(void)
 
 	Reply.Header.ID = 0x0515;
 	Reply.Header.Size = sizeof(Reply.Data);
-	strcpy(Reply.Data.Version, "Open Edition FW");
+	strcpy(Reply.Data.Version, Version);
 	Reply.Data.bHasCustomAesKey = bHasCustomAesKey;
 	Reply.Data.bIsInLockScreen = bIsInLockScreen;
 	Reply.Data.Challenge[0] = gChallenge[0];

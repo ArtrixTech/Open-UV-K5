@@ -17,6 +17,13 @@
 #ifndef APP_APP_H
 #define APP_APP_H
 
+#include <stdbool.h>
+#include "functions.h"
+
+void FUN_0000773c(void);
+void APP_SetStepDirection(bool bFlag, int8_t Direction);
+void APP_StartListening(FUNCTION_Type_t Function);
+
 void APP_Update(void);
 void APP_TimeSlice10ms(void);
 void APP_TimeSlice500ms(void);

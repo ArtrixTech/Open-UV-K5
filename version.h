@@ -14,17 +14,10 @@
  *     limitations under the License.
  */
 
-#ifndef APP_MENU_H
-#define APP_MENU_H
+#ifndef VERSION_H
+#define VERSION_H
 
-#include "driver/keyboard.h"
-
-int MENU_GetLimits(uint8_t Cursor, uint8_t *pMin, uint8_t *pMax);
-void MENU_AcceptSetting(void);
-void MENU_SelectNextDCS(void);
-void MENU_ShowCurrentSetting(void);
-
-void MENU_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
+extern const char Version[];
 
 #endif
 
