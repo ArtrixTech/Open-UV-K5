@@ -54,7 +54,7 @@
 
 static void APP_ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
 
-static void FUN_00005144(void)
+static void APP_CheckForIncoming(void)
 {
 	if (!g_SquelchLost) {
 		return;
@@ -70,33 +70,33 @@ static void FUN_00005144(void)
 				gNOAA_Countdown = 20;
 				gScheduleNOAA = false;
 			}
-			FUNCTION_Select(FUNCTION_3);
+			FUNCTION_Select(FUNCTION_INCOMING);
 			return;
 		}
 		if (gRxReceptionMode != RX_MODE_NONE) {
-			FUNCTION_Select(FUNCTION_3);
+			FUNCTION_Select(FUNCTION_INCOMING);
 			return;
 		}
 		gDualWatchCountdown = 100;
 		gScheduleDualWatch = false;
 	} else {
 		if (gRxReceptionMode != RX_MODE_NONE) {
-			FUNCTION_Select(FUNCTION_3);
+			FUNCTION_Select(FUNCTION_INCOMING);
 			return;
 		}
 		ScanPauseDelayIn10msec = 20;
 		gScheduleScanListen = false;
 	}
 	gRxReceptionMode = RX_MODE_DETECTED;
-	FUNCTION_Select(FUNCTION_3);
+	FUNCTION_Select(FUNCTION_INCOMING);
 }
 
-void FUN_000051e8(void)
+static void APP_HandleIncoming(void)
 {
 	bool bFlag;
 
 	if (!g_SquelchLost) {
-		FUNCTION_Select(FUNCTION_0);
+		FUNCTION_Select(FUNCTION_FOREGROUND);
 		gUpdateDisplay = true;
 		return;
 	}
@@ -294,16 +294,16 @@ Skip:
 void FUN_0000510c(void)
 {
 	switch (gCurrentFunction) {
-	case FUNCTION_0:
-		FUN_00005144();
+	case FUNCTION_FOREGROUND:
+		APP_CheckForIncoming();
 		break;
 	case FUNCTION_POWER_SAVE:
 		if (!gRxIdleMode) {
-			FUN_00005144();
+			APP_CheckForIncoming();
 		}
 		break;
-	case FUNCTION_3:
-		FUN_000051e8();
+	case FUNCTION_INCOMING:
+		APP_HandleIncoming();
 		break;
 	case FUNCTION_RECEIVE:
 		FUN_000052f0();
@@ -395,7 +395,7 @@ void APP_SetFrequencyByStep(VFO_Info_t *pInfo, int8_t Step)
 	}
 }
 
-void APP_MoreRadioStuff(void)
+static void FREQ_NextChannel(void)
 {
 	APP_SetFrequencyByStep(gRxVfo, gScanState);
 	RADIO_ApplyOffset(gRxVfo);
@@ -406,7 +406,7 @@ void APP_MoreRadioStuff(void)
 	g_20000413 = false;
 }
 
-void FUN_00007dd4(void)
+static void MR_NextChannel(void)
 {
 	uint8_t Ch1 = gEeprom.SCANLIST_PRIORITY_CH1[gEeprom.SCAN_LIST_DEFAULT];
 	uint8_t Ch2 = gEeprom.SCANLIST_PRIORITY_CH2[gEeprom.SCAN_LIST_DEFAULT];
@@ -463,7 +463,7 @@ Skip:
 	}
 }
 
-void NOAA_IncreaseChannel(void)
+static void NOAA_IncreaseChannel(void)
 {
 	gNoaaChannel++;
 	if (gNoaaChannel > 9) {
@@ -574,14 +574,14 @@ void APP_CheckRadioInterrupts(void)
 	}
 }
 
-void TalkRelatedCode(void)
+void APP_EndTransmission(void)
 {
 	RADIO_SendEndOfTransmission();
 	RADIO_EnableCxCSS();
 	RADIO_SetupRegisters(false);
 }
 
-static void FUN_00008334(void)
+static void APP_HandleVox(void)
 {
 	if (!gSetting_KILLED) {
 		if (g_200003B6 == 0) {
@@ -601,11 +601,11 @@ static void FUN_00008334(void)
 				}
 				if (gCurrentFunction == FUNCTION_TRANSMIT && !gPttIsPressed && !gVOX_NoiseDetected) {
 					if (gFlagEndTransmission) {
-						FUNCTION_Select(FUNCTION_0);
+						FUNCTION_Select(FUNCTION_FOREGROUND);
 					} else {
-						TalkRelatedCode();
+						APP_EndTransmission();
 						if (gEeprom.REPEATER_TAIL_TONE_ELIMINATION == 0) {
-							FUNCTION_Select(FUNCTION_0);
+							FUNCTION_Select(FUNCTION_FOREGROUND);
 						} else {
 							gRTTECountdown = gEeprom.REPEATER_TAIL_TONE_ELIMINATION * 10;
 						}
@@ -617,7 +617,7 @@ static void FUN_00008334(void)
 			} else if (g_VOX_Lost) {
 				gVOX_NoiseDetected = true;
 				if (gCurrentFunction == FUNCTION_POWER_SAVE) {
-					FUNCTION_Select(FUNCTION_0);
+					FUNCTION_Select(FUNCTION_FOREGROUND);
 				}
 				if (gCurrentFunction != FUNCTION_TRANSMIT) {
 					gDTMF_ReplyState = DTMF_REPLY_NONE;
@@ -639,7 +639,7 @@ void APP_Update(void)
 	if (gCurrentFunction == FUNCTION_TRANSMIT && gTxTimeoutReached) {
 		gTxTimeoutReached = false;
 		gFlagEndTransmission = true;
-		TalkRelatedCode();
+		APP_EndTransmission();
 		AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
 		RADIO_SetVfoState(VFO_STATE_TIMEOUT);
 		GUI_DisplayScreen();
@@ -657,16 +657,16 @@ void APP_Update(void)
 
 	if (gScreenToDisplay != DISPLAY_SCANNER && gScanState != SCAN_OFF && gScheduleScanListen && !gPttIsPressed && gVoiceWriteIndex == 0) {
 		if (IS_FREQ_CHANNEL(gNextMrChannel)) {
-			if (gCurrentFunction == FUNCTION_3) {
+			if (gCurrentFunction == FUNCTION_INCOMING) {
 				APP_StartListening(FUNCTION_RECEIVE);
 			} else {
-				APP_MoreRadioStuff();
+				FREQ_NextChannel();
 			}
 		} else {
-			if (gCopyOfCodeType == CODE_TYPE_OFF && gCurrentFunction == FUNCTION_3) {
+			if (gCopyOfCodeType == CODE_TYPE_OFF && gCurrentFunction == FUNCTION_INCOMING) {
 				APP_StartListening(FUNCTION_RECEIVE);
 			} else {
-				FUN_00007dd4();
+				MR_NextChannel();
 			}
 		}
 		gScanPauseMode = false;
@@ -709,7 +709,7 @@ void APP_Update(void)
 	}
 
 	if (gEeprom.VOX_SWITCH) {
-		FUN_00008334();
+		APP_HandleVox();
 	}
 
 	if (gSchedulePowerSave) {
@@ -909,7 +909,7 @@ void APP_TimeSlice10ms(void)
 		if (gRTTECountdown) {
 			gRTTECountdown--;
 			if (gRTTECountdown == 0) {
-				FUNCTION_Select(FUNCTION_0);
+				FUNCTION_Select(FUNCTION_FOREGROUND);
 				gUpdateDisplay = true;
 			}
 		}
@@ -1267,7 +1267,7 @@ void FUN_000075b0(void)
 	gScanProgressIndicator = 0;
 }
 
-void APP_SetStepDirection(bool bFlag, int8_t Direction)
+void CHANNEL_Next(bool bFlag, int8_t Direction)
 {
 	RADIO_SelectVfos();
 	gNextMrChannel = gRxVfo->CHANNEL_SAVE;
@@ -1277,12 +1277,12 @@ void APP_SetStepDirection(bool bFlag, int8_t Direction)
 		if (bFlag) {
 			gRestoreMrChannel = gNextMrChannel;
 		}
-		FUN_00007dd4();
+		MR_NextChannel();
 	} else {
 		if (bFlag) {
 			gRestoreFrequency = gRxVfo->ConfigRX.Frequency;
 		}
-		APP_MoreRadioStuff();
+		FREQ_NextChannel();
 	}
 	ScanPauseDelayIn10msec = 50;
 	gScheduleScanListen = false;
@@ -1296,7 +1296,7 @@ static void APP_ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	bool bFlag;
 
 	if (gCurrentFunction == FUNCTION_POWER_SAVE) {
-		FUNCTION_Select(FUNCTION_0);
+		FUNCTION_Select(FUNCTION_FOREGROUND);
 	}
 	gBatterySaveCountdown = 1000;
 	if (gEeprom.AUTO_KEYPAD_LOCK) {
@@ -1462,7 +1462,7 @@ static void APP_ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			} else if (!bKeyHeld && bKeyPressed) {
 				FUN_00001150();
 				if (gEeprom.REPEATER_TAIL_TONE_ELIMINATION == 0) {
-					FUNCTION_Select(FUNCTION_0);
+					FUNCTION_Select(FUNCTION_FOREGROUND);
 				} else {
 					gRTTECountdown = gEeprom.REPEATER_TAIL_TONE_ELIMINATION * 10;
 				}
